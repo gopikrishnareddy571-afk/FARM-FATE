@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm Fate</title>
+
+<style>
+.avatar{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  object-fit:cover;
+  display:block;
+  margin:10px auto;
+  cursor:pointer;
+  border:2px solid #2e7d32;
+}
+
+body{margin:0;font-family:Arial;background:#f4f6f5}
+
+/* HEADER */
+header{
+  background:#1b5e20;color:#fff;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px
+}
+.lang-bar{display:flex;gap:14px;overflow-x:auto;font-size:14px}
+.lang-bar span{cursor:pointer;white-space:nowrap;opacity:.8}
+.active-lang{opacity:1;border-bottom:2px solid #7CFC00}
+
+.profile-area{display:flex;align-items:center;gap:6px;cursor:pointer}
+.profile-area span{font-size:14px}
+
+/* CONTAINER */
+.container{padding:14px}
+
+/* GOVERNMENT SCHEMES */
+.scheme-card{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  margin-bottom:16px;
+
+  position:relative;
+  overflow:hidden;
+
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+
+/* VERTICAL CARDS */
+.card{
+  border-radius:16px;padding:18px;
+  color:#fff;font-size:18px;font-weight:bold;
+  margin-bottom:14px;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,.15)
+}
+.green{background:#2e7d32}
+.blue{background:#1565c0}
+.orange{background:#ef6c00}
+.purple{background:#6a1b9a}
+
+/* RESULT */
+.result{
+  background:#fff;border-radius:14px;padding:16px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1)
+}
+
+/* PROFILE */
+input,select{
+    
+  width:100%;padding:10px;margin-top:8px;
+  border-radius:8px;border:1px solid #ccc
+}
+.btn{
+  background:#2e7d32;color:#fff;border:none;
+  padding:14px;border-radius:12px;
+  font-size:16px;width:100%;margin-top:12px
+}
+.hidden{
+  display:none !important;
+}
+
+
+footer{
+  background:#1b5e20;color:#fff;
+  padding:18px;text-align:center;margin-top:20px
+}
+
+
+</style>
+
+
+</head>
+
+<body>
+
+<header>
+  <div class="lang-bar" id="langBar">
+    <span class="active-lang" data-lang="en">English</span>
+    <span data-lang="hi">हिंदी</span>
+    <span data-lang="te">తెలుగు</span>
+    <span data-lang="ta">தமிழ்</span>
+    <span data-lang="kn">ಕನ್ನಡ</span>
+    <span data-lang="ml">മലയാളം</span>
+    <span data-lang="or">ଓଡ଼ିଆ</span>
+    
+  </div>
+
+  <div class="profile-area" onclick="openProfile()">
+
+
+  <span id="profileText">Profile</span>
+  </div>
+
+</header>
+
+<div class="container">
+
+<!-- HOME -->
+<div id="home">
+
+  <div class="scheme-card">
+    <h3 id="schemeTitle"></h3>
+    <p id="schemeText"></p>
+    <a id="schemeLink" target="_blank"></a>
+  </div>
+
+ <div class="card purple" id="btnBest" onclick="bestCrop()"></div>
+<div id="resultBest" class="result hidden"></div>
+
+<div class="card orange" id="btnMyCrop" onclick="showMyCrop()"></div>
+<div id="resultMyCrop" class="result hidden"></div>
+
+<div class="card blue" id="btnWeather" onclick="weatherToday()"></div>
+<div id="resultWeather" class="result hidden"></div>
+
+<div class="card green" id="btnAdvice" onclick="cropAdvice()"></div>
+<div id="resultAdvice" class="result hidden"></div>
+
+
+
+</div>
+
+<div id="result" class="result hidden"></div>
+
+
+<div id="PROFILE" class="hidden" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:1000;
+">
+  <div style="
+  background:white;
+  width:90%;
+  max-height:90%;
+  overflow:auto;
+  padding:20px;
+  border-radius:16px;
+  ">
+  <h3 id="profileTitle">👤 Farmer PROFILE</h3>
+<img id="profilePreview"
+     class="avatar hidden"
+     onclick="openFullImage()">
+
+
+
+
+<input id="farmerName" placeholder="Full Name">
+<input id="phone" name="phone" placeholder="Phone Number" maxlength="10">
+<input id="aadhaar" name="aadhaar" placeholder="Aadhaar Number" maxlength="12">
+<input id="kisan" name="kisan" placeholder="Kisan Card Number">
+  <label>State</label>
+  <select id="state"></select>
+
+  <label>District</label>
+  <select id="district"></select>
+
+  <input placeholder="Village">
+
+  <label>Profile Photo (Optional)</label>
+<input type="file" accept="image/*" capture="user" onchange="previewProfilePhoto(this)">
+
+<label>Aadhaar Card Photo</label>
+<input 
+  type="file" 
+  accept="image/*" 
+  capture="environment"
+  name="aadhaar_pic"
+  required
+>
+
+<label>Kisan Card Photo</label>
+<input 
+  type="file" 
+  accept="image/*" 
+  capture="environment"
+  name="kisan_pic"
+  required
+>
+
+<button class="btn" onclick="if(validateProfile()) closeProfile();">
+
+
+
+Save PROFILE
+</button>
+
+<button class="btn" style="background:#b71c1c" onclick="logout()">
+🚪 Logout
+</button>
+
+    </div>
+</div>
+<div id="seasonResult" class="result hidden">
+  <h3 id="seasonTitle"></h3>
+  <ul id="cropList"></ul>
+</div>
+
+
+
+
+
+<footer>
+  <p>📞 Contact: gopad0432@gmail.com</p>
+</footer>
+<script>
+const CROP_DB = {
+  /* STATES */
+  "Andhra Pradesh": {
+    crops: ["Paddy", "Banana", "Coconut", "Oil Palm", "Chilli"],
+    districts: {
+      "West Godavari": ["Oil Palm", "Banana", "Paddy"],
+      "East Godavari": ["Coconut", "Paddy", "Banana"],
+      "Anantapur": ["Groundnut", "Millets"],
+      "Chittoor": ["Mango", "Tomato", "Groundnut"]
+    }
+  },
+
+  "Telangana": {
+    crops: ["Cotton", "Paddy", "Maize", "Red Gram"],
+    districts: {
+      "Warangal": ["Cotton", "Paddy"],
+      "Nizamabad": ["Paddy", "Turmeric"]
+    }
+  },
+
+  "Tamil Nadu": {
+    crops: ["Paddy", "Sugarcane", "Banana", "Coconut"],
+    districts: {
+      "Thanjavur": ["Paddy", "Sugarcane"],
+      "Erode": ["Turmeric", "Sugarcane"]
+    }
+  },
+
+  "Karnataka": {
+    crops: ["Ragi", "Maize", "Coffee", "Coconut"],
+    districts: {
+      "Kodagu": ["Coffee", "Pepper"],
+      "Mandya": ["Sugarcane", "Paddy"]
+    }
+  },
+
+  "Kerala": {
+    crops: ["Coconut", "Rubber", "Pepper", "Banana"],
+    districts: {
+      "Idukki": ["Pepper", "Cardamom"],
+      "Alappuzha": ["Paddy", "Coconut"]
+    }
+  },
+
+  "Maharashtra": {
+    crops: ["Cotton", "Soybean", "Sugarcane", "Pigeon Pea"],
+    districts: {
+      "Kolhapur": ["Sugarcane"],
+      "Nagpur": ["Orange", "Cotton"]
+    }
+  },
+
+  "Punjab": {
+    crops: ["Wheat", "Paddy", "Maize"],
+    districts: {
+      "Ludhiana": ["Wheat", "Paddy"]
+    }
+  },
+
+  "Haryana": {
+    crops: ["Wheat", "Mustard", "Paddy"],
+    districts: {}
+  },
+
+  "Uttar Pradesh": {
+    crops: ["Wheat", "Sugarcane", "Paddy"],
+    districts: {
+      "Meerut": ["Sugarcane", "Wheat"]
+    }
+  },
+
+  "Bihar": {
+    crops: ["Paddy", "Wheat", "Maize"],
+    districts: {}
+  },
+
+  "West Bengal": {
+    crops: ["Paddy", "Jute", "Potato"],
+    districts: {
+      "Hooghly": ["Jute", "Potato"]
+    }
+  },
+
+  "Odisha": {
+    crops: ["Paddy", "Pulses", "Oilseeds"],
+    districts: {}
+  },
+
+  "Chhattisgarh": {
+    crops: ["Paddy", "Maize"],
+    districts: {}
+  },
+
+  "Madhya Pradesh": {
+    crops: ["Soybean", "Wheat", "Gram"],
+    districts: {}
+  },
+
+  "Rajasthan": {
+    crops: ["Bajra", "Mustard", "Wheat"],
+    districts: {}
+  },
+
+  "Gujarat": {
+    crops: ["Cotton", "Groundnut", "Castor"],
+    districts: {}
+  },
+
+  "Jharkhand": {
+    crops: ["Paddy", "Maize"],
+    districts: {}
+  },
+
+  "Assam": {
+    crops: ["Paddy", "Tea", "Jute"],
+    districts: {}
+  },
+
+  /* UNION TERRITORIES */
+  "Delhi": {
+    crops: ["Vegetables", "Mustard"],
+    districts: {}
+  },
+
+  "Puducherry": {
+    crops: ["Paddy", "Sugarcane"],
+    districts: {}
+  },
+
+  "Chandigarh": {
+    crops: ["Vegetables"],
+    districts: {}
+  },
+
+  "Jammu and Kashmir": {
+    crops: ["Apple", "Saffron", "Maize"],
+    districts: {
+      "Pulwama": ["Saffron"]
+    }
+  },
+
+  "Ladakh": {
+    crops: ["Barley", "Peas"],
+    districts: {}
+  },
+
+  "Andaman and Nicobar Islands": {
+    crops: ["Coconut", "Arecanut"],
+    districts: {}
+  },
+
+  "Lakshadweep": {
+    crops: ["Coconut"],
+    districts: {}
+  },
+
+  "Dadra and Nagar Haveli and Daman and Diu": {
+    crops: ["Rice", "Vegetables"],
+    districts: {}
+  }
+};
+</script>
+
+<!-- STATES FILE -->
+<script src="{{ url_for('static', filename='states.js') }}"></script>
+
+<script>
+const STATE_DATA = window.states || {};
+let currentLang="en";
+let selectedCrop=null;
+let schemeIndex=0;
+
+/* ================= TEXT DATA ================= */
+const TEXT={
+en:{
+ schemeHeading:"🌱 Government Scheme",
+ schemes:[
+  {title:"PM Kisan",desc:"₹6000 yearly income support to farmers.",link:"https://pmkisan.gov.in"},
+  {title:"PMFBY",desc:"Crop insurance against natural calamities.",link:"https://pmfby.gov.in"},
+  {title:"Soil Health Card",desc:"Free soil testing and fertilizer advice.",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["Crop Advice","Weather Today","My Crop","Best Crop This Season","Profile"],
+ advice:["Use certified seeds from trusted sources",
+"Do soil testing before fertilizer use",
+"Avoid pesticides containing Monocrotophos or Endosulfan (highly toxic)",
+"Do NOT mix multiple pesticides without expert advice",
+"Always wear mask and gloves while spraying",
+"Prefer organic bio-pesticides when possible",
+"Spray in early morning or evening (avoid strong wind)"
+],
+
+ weatherTitle:"🌦️ Weather Today",
+ wind:"Wind Speed",
+ temp:"Temperature",
+ tomorrow:"Tomorrow",
+ suitable:"Suitable for farming",
+ bestCropTitle:"✅ Best Crops This Season",
+ bestCropTitleState:"✅ Best Crops for",
+ crops:["Rice","Cotton","Maize","Pulses"],
+ selectCropMsg:"Select a crop first",
+ 
+
+
+ 
+},
+
+
+
+hi:{
+ schemeHeading:"🌱 सरकारी योजनाएँ",
+ schemes:[
+  {title:"पीएम किसान",desc:"₹6000 वार्षिक आय सहायता।",link:"https://pmkisan.gov.in"},
+  {title:"फसल बीमा",desc:"प्राकृतिक आपदा से फसल सुरक्षा।",link:"https://pmfby.gov.in"},
+  {title:"मृदा स्वास्थ्य कार्ड",desc:"मिट्टी परीक्षण सुविधा।",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["फसल सलाह","आज का मौसम","मेरी फसल","इस मौसम की फसल","प्रोफाइल"],
+ advice:[
+"हमेशा प्रमाणित बीजों का उपयोग करें",
+"उर्वरक डालने से पहले मिट्टी परीक्षण करें",
+"Monocrotophos या Endosulfan वाले कीटनाशक से बचें",
+"विशेषज्ञ सलाह के बिना कीटनाशक न मिलाएं",
+"स्प्रे करते समय मास्क और दस्ताने पहनें",
+"संभव हो तो जैविक कीटनाशक उपयोग करें",
+"सुबह या शाम को ही छिड़काव करें (तेज हवा में नहीं)"
+],
+
+ weatherTitle:"🌦️ आज का मौसम",
+ temp:"तापमान",
+ tomorrow:"कल",
+ suitable:"खेती के लिए उपयुक्त",
+ bestCropTitle:"✅ इस मौसम की अच्छी फसलें",
+ bestCropTitleState:"✅ इस क्षेत्र की अच्छी फसलें",
+ crops:["धान","कपास","मक्का","दालें"],
+ selectCropMsg:"पहले फसल चुनें",
+ cropTranslate:{
+"Paddy":"धान",
+"Rice":"चावल",
+"Banana":"केला",
+"Coconut":"नारियल",
+"Oil Palm":"ऑयल पाम",
+"Cotton":"कपास",
+"Maize":"मक्का",
+"Red Gram":"अरहर",
+"Pigeon Pea":"अरहर",
+"Groundnut":"मूंगफली",
+"Millets":"बाजरा",
+"Bajra":"बाजरा",
+"Mango":"आम",
+"Tomato":"टमाटर",
+"Sugarcane":"गन्ना",
+"Coffee":"कॉफी",
+"Rubber":"रबर",
+"Pepper":"काली मिर्च",
+"Wheat":"गेहूं",
+"Mustard":"सरसों",
+"Jute":"जूट",
+"Potato":"आलू",
+"Tea":"चाय",
+"Chilli":"मिर्च",
+"Turmeric":"हल्दी",
+"Cardamom":"इलायची",
+"Soybean":"सोयाबीन",
+"Pulses":"दालें",
+"Oilseeds":"तिलहन",
+"Gram":"चना",
+"Castor":"अरंडी",
+"Vegetables":"सब्जियां",
+"Apple":"सेब",
+"Saffron":"केसर",
+"Barley":"जौ",
+"Peas":"मटर",
+"Arecanut":"सुपारी"
+}
+},
+
+te:{
+ schemeHeading:"🌱 ప్రభుత్వ పథకాలు",
+ schemes:[
+  {title:"PM కిసాన్",desc:"సంవత్సరానికి ₹6000 సహాయం.",link:"https://pmkisan.gov.in"},
+  {title:"పంట బీమా",desc:"ప్రకృతి విపత్తుల నుండి రక్షణ.",link:"https://pmfby.gov.in"},
+  {title:"నేల ఆరోగ్య కార్డు",desc:"నేల పరీక్ష & ఎరువుల సూచనలు.",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["పంట సలహా","వాతావరణం","నా పంట","ఉత్తమ పంట","ప్రొఫైల్"],
+ advice:[
+"నాణ్యమైన ధృవీకరించిన విత్తనాలు ఉపయోగించండి",
+"ఎరువులు వేసే ముందు నేల పరీక్ష చేయండి",
+"Monocrotophos లేదా Endosulfan ఉన్న పురుగుమందులు వాడవద్దు",
+"నిపుణుల సలహా లేకుండా మందులు కలపవద్దు",
+"స్ప్రే చేసే సమయంలో మాస్క్ మరియు గ్లోవ్స్ ధరించండి",
+"సాధ్యమైనంత వరకు సేంద్రీయ పురుగుమందులు వాడండి",
+"ఉదయం లేదా సాయంత్రం మాత్రమే స్ప్రే చేయండి (గాలి ఎక్కువగా ఉన్నప్పుడు కాదు)"
+],
+
+ weatherTitle:"🌦️ ఈరోజు వాతావరణం",
+ wind:"గాలి వేగం",
+ temp:"ఉష్ణోగ్రత",
+ tomorrow:"రేపు",
+ suitable:"వ్యవసాయానికి అనుకూలం",
+ bestCropTitle:"✅ ఈ సీజన్‌కు సరైన పంటలు",
+ bestCropTitleState:"✅ ఈ ప్రాంతానికి ఉత్తమ పంటలు",
+ crops:["వరి","పత్తి","మొక్కజొన్న","పప్పులు"],
+ selectCropMsg:"ముందుగా పంటను ఎంచుకోండి",
+ cropTranslate:{
+"Paddy":"వరి",
+"Rice":"బియ్యం",
+"Banana":"అరటి",
+"Coconut":"కొబ్బరి",
+"Oil Palm":"ఆయిల్ పామ్",
+"Cotton":"పత్తి",
+"Maize":"మొక్కజొన్న",
+"Red Gram":"కందులు",
+"Pigeon Pea":"కందులు",
+"Groundnut":"వేరుశెనగ",
+"Millets":"సజ్జలు",
+"Bajra":"సజ్జ",
+"Mango":"మామిడి",
+"Tomato":"టమోటా",
+"Sugarcane":"చెరుకు",
+"Coffee":"కాఫీ",
+"Rubber":"రబ్బరు",
+"Pepper":"మిరియాలు",
+"Wheat":"గోధుమ",
+"Mustard":"ఆవాలు",
+"Jute":"జూట్",
+"Potato":"బంగాళాదుంప",
+"Tea":"టీ",
+"Chilli":"మిర్చి",
+"Turmeric":"పసుపు",
+"Cardamom":"యాలకులు",
+"Soybean":"సోయాబీన్",
+"Pulses":"పప్పులు",
+"Oilseeds":"నూనె గింజలు",
+"Gram":"సెనగ",
+"Castor":"ఆముదం",
+"Vegetables":"కూరగాయలు",
+"Apple":"ఆపిల్",
+"Saffron":"కుంకుమపువ్వు",
+"Barley":"బార్లీ",
+"Peas":"బటానీలు",
+"Arecanut":"పొగాకు గింజ"
+}
+
+
+},
+
+ta:{
+ schemeHeading:"🌱 அரசு திட்டங்கள்",
+ schemes:[
+  {title:"PM கிசான்",desc:"₹6000 ஆண்டு உதவி.",link:"https://pmkisan.gov.in"},
+  {title:"பயிர் காப்பீடு",desc:"இயற்கை பேரிடர் பாதுகாப்பு.",link:"https://pmfby.gov.in"},
+  {title:"மண் ஆரோக்கிய அட்டை",desc:"இலவச மண் பரிசோதனை.",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["பயிர் ஆலோசனை","இன்றைய வானிலை","என் பயிர்","சிறந்த பயிர்","சுயவிவரம்"],
+ advice:[
+"சான்றளிக்கப்பட்ட விதைகளை மட்டும் பயன்படுத்துங்கள்",
+"உரமிடுவதற்கு முன் மண் பரிசோதனை செய்யுங்கள்",
+"Monocrotophos அல்லது Endosulfan உள்ள பூச்சிமருந்துகளை தவிர்க்கவும்",
+"நிபுணர் ஆலோசனை இல்லாமல் மருந்துகளை கலக்க வேண்டாம்",
+"தூவும்போது முகமூடி மற்றும் கையுறை அணியுங்கள்",
+"சாத்தியமானால் இயற்கை பூச்சிமருந்துகளை பயன்படுத்துங்கள்",
+"காலை அல்லது மாலை நேரத்தில் மட்டும் தெளிக்கவும் (பல காற்றில் இல்லை)"
+],
+
+ weatherTitle:"🌦️ இன்றைய வானிலை",
+ wind:"காற்றின் வேகம்",
+ temp:"வெப்பநிலை",
+ tomorrow:"நாளை",
+ suitable:"விவசாயத்திற்கு ஏற்றது",
+ bestCropTitle:"✅ இந்த பருவத்தின் சிறந்த பயிர்கள்",
+ bestCropTitleState:"✅ இந்த பகுதியில் சிறந்த பயிர்கள்",
+ crops:["நெல்","பருத்தி","மக்காச்சோளம்","பயறு"],
+ selectCropMsg:"முதலில் பயிரைத் தேர்ந்தெடுக்கவும்",
+ cropTranslate:{
+"Paddy":"நெல்",
+"Rice":"அரிசி",
+"Banana":"வாழை",
+"Coconut":"தேங்காய்",
+"Oil Palm":"ஆயில் பாம்",
+"Cotton":"பருத்தி",
+"Maize":"மக்காச்சோளம்",
+"Red Gram":"துவரம் பருப்பு",
+"Pigeon Pea":"துவரம் பருப்பு",
+"Groundnut":"வேர்க்கடலை",
+"Millets":"கம்பு",
+"Bajra":"கம்பு",
+"Mango":"மாம்பழம்",
+"Tomato":"தக்காளி",
+"Sugarcane":"கரும்பு",
+"Coffee":"காப்பி",
+"Rubber":"ரப்பர்",
+"Pepper":"மிளகு",
+"Wheat":"கோதுமை",
+"Mustard":"கடுகு",
+"Jute":"சணல்",
+"Potato":"உருளைக்கிழங்கு",
+"Tea":"தேநீர்",
+"Chilli":"மிளகாய்",
+"Turmeric":"மஞ்சள்",
+"Cardamom":"ஏலக்காய்",
+"Soybean":"சோயாபீன்",
+"Pulses":"பருப்புகள்",
+"Oilseeds":"எண்ணெய் விதைகள்",
+"Gram":"கொண்டைக்கடலை",
+"Castor":"ஆமணக்கு",
+"Vegetables":"காய்கறிகள்",
+"Apple":"ஆப்பிள்",
+"Saffron":"குங்குமப்பூ",
+"Barley":"வரகு",
+"Peas":"பட்டாணி",
+"Arecanut":"பாக்கு"
+}
+ 
+
+},
+
+kn:{
+ schemeHeading:"🌱 ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+ schemes:[
+  {title:"PM ಕಿಸಾನ್",desc:"ವಾರ್ಷಿಕ ₹6000 ಸಹಾಯ.",link:"https://pmkisan.gov.in"},
+  {title:"ಬೆಳೆ ವಿಮೆ",desc:"ಬೆಳೆಗಳಿಗೆ ವಿಮೆ ರಕ್ಷಣೆ.",link:"https://pmfby.gov.in"},
+  {title:"ಮಣ್ಣು ಆರೋಗ್ಯ ಕಾರ್ಡ್",desc:"ಉಚಿತ ಮಣ್ಣು ಪರೀಕ್ಷೆ.",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["ಬೆಳೆ ಸಲಹೆ","ಹವಾಮಾನ","ನನ್ನ ಬೆಳೆ","ಉತ್ತಮ ಬೆಳೆ","ಪ್ರೊಫೈಲ್"],
+ advice:[
+"ಗುಣಮಟ್ಟದ ಪ್ರಮಾಣಿತ ಬೀಜಗಳನ್ನು ಬಳಸಿ",
+"ರಸಗೊಬ್ಬರ ಹಾಕುವ ಮೊದಲು ಮಣ್ಣಿನ ಪರೀಕ್ಷೆ ಮಾಡಿ",
+"Monocrotophos ಅಥವಾ Endosulfan ಇರುವ ಕೀಟನಾಶಕಗಳನ್ನು ತಪ್ಪಿಸಿ",
+"ತಜ್ಞರ ಸಲಹೆ ಇಲ್ಲದೆ ಕೀಟನಾಶಕಗಳನ್ನು ಮಿಶ್ರಣ ಮಾಡಬೇಡಿ",
+"ಸ್ಪ್ರೇ ಮಾಡುವಾಗ ಮಾಸ್ಕ್ ಮತ್ತು ಗ್ಲೌವ್ಸ್ ಧರಿಸಿ",
+"ಸಾಧ್ಯವಾದರೆ ಜೈವಿಕ ಕೀಟನಾಶಕ ಬಳಸಿ",
+"ಬೆಳಿಗ್ಗೆ ಅಥವಾ ಸಂಜೆ ಸಮಯದಲ್ಲಿ ಮಾತ್ರ ಸ್ಪ್ರೇ ಮಾಡಿ (ಜೋರಾದ ಗಾಳಿ ಇದ್ದಾಗ ಬೇಡ)"
+],
+
+ weatherTitle:"🌦️ ಇಂದಿನ ಹವಾಮಾನ",
+ wind:"ಗಾಳಿಯ ವೇಗ",
+ temp:"ತಾಪಮಾನ",
+ tomorrow:"ನಾಳೆ",
+ suitable:"ಕೃಷಿಗೆ ಸೂಕ್ತ",
+ bestCropTitle:"✅ ಈ ಹಂಗಾಮಿನ ಉತ್ತಮ ಬೆಳೆಗಳು",
+ bestCropTitleState:"✅ ಈ ಪ್ರದೇಶಕ್ಕೆ ಸೂಕ್ತ ಬೆಳೆಗಳು",
+ crops:["ಅಕ್ಕಿ","ಹತ್ತಿ","ಮೆಕ್ಕೆಜೋಳ","ಕಾಳುಗಳು"],
+ selectCropMsg:"ಮೊದಲು ಬೆಳೆ ಆಯ್ಕೆಮಾಡಿ",
+ cropTranslate:{
+"Paddy":"ಅಕ್ಕಿ",
+"Rice":"ಅಕ್ಕಿ",
+"Banana":"ಬಾಳೆ",
+"Coconut":"ತೆಂಗು",
+"Oil Palm":"ಆಯಿಲ್ ಪಾಮ್",
+"Cotton":"ಹತ್ತಿ",
+"Maize":"ಜೋಳ",
+"Red Gram":"ತೊಗರಿ",
+"Pigeon Pea":"ತೊಗರಿ",
+"Groundnut":"ಕಡಲೆಕಾಯಿ",
+"Millets":"ಸಜ್ಜೆ",
+"Bajra":"ಸಜ್ಜೆ",
+"Mango":"ಮಾವು",
+"Tomato":"ಟೊಮೇಟೊ",
+"Sugarcane":"ಕಬ್ಬು",
+"Coffee":"ಕಾಫಿ",
+"Rubber":"ರಬ್ಬರ್",
+"Pepper":"ಮೆಣಸು",
+"Wheat":"ಗೋಧಿ",
+"Mustard":"ಸಾಸಿವೆ",
+"Jute":"ಜುಟ್",
+"Potato":"ಆಲೂಗಡ್ಡೆ",
+"Tea":"ಚಹಾ",
+"Chilli":"ಮೆಣಸಿನಕಾಯಿ",
+"Turmeric":"ಅರಿಶಿನ",
+"Cardamom":"ಏಲಕ್ಕಿ",
+"Soybean":"ಸೋಯಾಬೀನ್",
+"Pulses":"ಬೇಳೆಗಳು",
+"Oilseeds":"ಎಣ್ಣೆ ಬೀಜಗಳು",
+"Gram":"ಕಡಲೆ",
+"Castor":"ಹರಳೆ",
+"Vegetables":"ತರಕಾರಿಗಳು",
+"Apple":"ಸೇಬು",
+"Saffron":"ಕುಂಕುಮ",
+"Barley":"ಜೋ",
+"Peas":"ಬಟಾಣಿ",
+"Arecanut":"ಅಡಿಕೆ"
+}
+
+},
+
+ml:{
+ schemeHeading:"🌱 സർക്കാർ പദ്ധതികൾ",
+ schemes:[
+  {title:"PM കിസാൻ",desc:"₹6000 വാർഷിക സഹായം.",link:"https://pmkisan.gov.in"},
+  {title:"വിള ഇൻഷുറൻസ്",desc:"വിള സംരക്ഷണം.",link:"https://pmfby.gov.in"},
+  {title:"മണ്ണ് ആരോഗ്യമ کارت",desc:"സൗജന്യ മണ്ണ് പരിശോധന.",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["വിള ഉപദേശം","കാലാവസ്ഥ","എന്റെ വിള","മികച്ച വിള","പ്രൊഫൈൽ"],
+ advice:[
+"സർട്ടിഫൈ ചെയ്ത നല്ല വിത്തുകൾ മാത്രം ഉപയോഗിക്കുക",
+"വളം ഇടുന്നതിന് മുമ്പ് മണ്ണ് പരിശോധന നടത്തുക",
+"Monocrotophos അല്ലെങ്കിൽ Endosulfan ഉള്ള കീടനാശിനികൾ ഒഴിവാക്കുക",
+"വിദഗ്ധരുടെ ഉപദേശം ഇല്ലാതെ മരുന്നുകൾ കലക്കരുത്",
+"സ്പ്രേ ചെയ്യുമ്പോൾ മാസ്കും കൈയ്യുറയും ധരിക്കുക",
+"കഴിയുമെങ്കിൽ ജൈവ കീടനാശിനികൾ ഉപയോഗിക്കുക",
+"രാവിലെ അല്ലെങ്കിൽ വൈകുന്നേരം മാത്രം തളിക്കുക (കാറ്റ് കൂടുതലുള്ളപ്പോൾ അല്ല)"
+],
+
+ weatherTitle:"🌦️ ഇന്നത്തെ കാലാവസ്ഥ",
+ wind:"കാറ്റിന്റെ വേഗം",
+ temp:"താപനില",
+ tomorrow:"നാളെ",
+ suitable:"കൃഷിക്ക് അനുയോജ്യം",
+ bestCropTitle:"✅ ഈ സീസണിലെ മികച്ച വിളകൾ",
+ bestCropTitleState:"✅ ഈ പ്രദേശത്തിന് അനുയോജ്യമായ വിളകൾ",
+ crops:["നെല്ല്","പരുത്തി","ചോളം","പയർ"],
+ selectCropMsg:"ആദ്യം വിള തിരഞ്ഞെടുക്കുക",
+cropTranslate:{
+"Paddy":"നെല്ല്",
+"Rice":"അരി",
+"Banana":"വാഴ",
+"Coconut":"തേങ്ങ",
+"Oil Palm":"ഓയിൽ പാം",
+"Cotton":"പരുത്തി",
+"Maize":"ചോളം",
+"Red Gram":"തുവര",
+"Pigeon Pea":"തുവര",
+"Groundnut":"വേരുകടല",
+"Millets":"കമ്പ്",
+"Bajra":"കമ്പ്",
+"Mango":"മാങ്ങ",
+"Tomato":"തക്കാളി",
+"Sugarcane":"കരിമ്പ്",
+"Coffee":"കാപ്പി",
+"Rubber":"റബ്ബർ",
+"Pepper":"കുരുമുളക്",
+"Wheat":"ഗോതമ്പ്",
+"Mustard":"കടുക്",
+"Jute":"ചണം",
+"Potato":"ഉരുളക്കിഴങ്ങ്",
+"Tea":"ചായ",
+"Chilli":"മുളക്",
+"Turmeric":"മഞ്ഞൾ",
+"Cardamom":"ഏലക്ക",
+"Soybean":"സോയാബീൻ",
+"Pulses":"പയർവർഗങ്ങൾ",
+"Oilseeds":"എണ്ണവിത്തുകൾ",
+"Gram":"കടല",
+"Castor":"ആമണക്കു",
+"Vegetables":"പച്ചക്കറികൾ",
+"Apple":"ആപ്പിൾ",
+"Saffron":"കുങ്കുമപ്പൂ",
+"Barley":"ബാർലി",
+"Peas":"പട്ടാണി",
+"Arecanut":"അടക്ക"
+}
+
+},
+
+or:{
+ schemeHeading:"🌱 ସରକାରୀ ଯୋଜନା",
+ schemes:[
+  {title:"PM କିସାନ",desc:"ବାର୍ଷିକ ₹6000 ସହାୟତା.",link:"https://pmkisan.gov.in"},
+  {title:"ଫସଲ ବୀମା",desc:"ଫସଲ ସୁରକ୍ଷା.",link:"https://pmfby.gov.in"},
+  {title:"ମାଟି ସ୍ୱାସ୍ଥ୍ୟ କାର୍ଡ",desc:"ମାଟି ପରୀକ୍ଷା.",link:"https://soilhealth.dac.gov.in"}
+ ],
+ labels:["ଫସଲ ପରାମର୍ଶ","ଆଜିର ପାଣିପାଗ","ମୋ ଫସଲ","ସର୍ବୋତ୍ତମ ଫସଲ","ପ୍ରୋଫାଇଲ୍"],
+ advice:[
+"ସଦା ଭଲ ଗୁଣସ୍ତରର ବୀଜ ବ୍ୟବହାର କରନ୍ତୁ",
+"ଖାଦ୍ୟସାର ଦେବା ପୂର୍ବରୁ ମାଟି ପରୀକ୍ଷା କରନ୍ତୁ",
+"Monocrotophos କିମ୍ବା Endosulfan ଥିବା କୀଟନାଶକ ବ୍ୟବହାର କରନ୍ତୁ ନାହିଁ",
+"ବିଶେଷଜ୍ଞ ସଳହା ବିନା ଔଷଧ ମିଶାନ୍ତୁ ନାହିଁ",
+"ସ୍ପ୍ରେ ସମୟରେ ମାସ୍କ ଓ ହାତମୋଜା ପିନ୍ଧନ୍ତୁ",
+"ସମ୍ଭବ ହେଲେ ଜୈବିକ କୀଟନାଶକ ବ୍ୟବହାର କରନ୍ତୁ",
+"ସକାଳ ବା ସନ୍ଧ୍ୟାରେ ମାତ୍ର ସ୍ପ୍ରେ କରନ୍ତୁ (ତେଜ ପବନରେ ନୁହେଁ)"
+],
+
+ weatherTitle:"🌦️ ଆଜିର ପାଣିପାଗ",
+ wind:"ପବନ ବେଗ",
+ temp:"ତାପମାତ୍ରା",
+ tomorrow:"ଆସନ୍ତାକାଲି",
+ suitable:"ଚାଷ ପାଇଁ ଉପଯୁକ୍ତ",
+ bestCropTitle:"✅ ଏହି ଋତୁର ଭଲ ଫସଲ",
+ bestCropTitleState:"✅ ଏହି ଅଞ୍ଚଳ ପାଇଁ ଭଲ ଫସଲ",
+ crops:["ଧାନ","କପା","ମକା","ଡାଲି"],
+ selectCropMsg:"ପ୍ରଥମେ ଫସଲ ବାଛନ୍ତୁ",
+cropTranslate:{
+"Paddy":"ଧାନ",
+"Rice":"ଚାଉଳ",
+"Banana":"କଦଳୀ",
+"Coconut":"ନଡ଼ିଆ",
+"Oil Palm":"ଓଇଲ ପାମ",
+"Cotton":"କପା",
+"Maize":"ମକା",
+"Red Gram":"ଅଢ଼ହର",
+"Pigeon Pea":"ଅଢ଼ହର",
+"Groundnut":"ଚିନାବାଦାମ",
+"Millets":"ମାଣ୍ଡିଆ",
+"Bajra":"ବାଜରା",
+"Mango":"ଆମ୍ବ",
+"Tomato":"ଟମାଟର",
+"Sugarcane":"ଅଖୁ",
+"Coffee":"କଫି",
+"Rubber":"ରବର",
+"Pepper":"ଗୋଲମରିଚ",
+"Wheat":"ଗହମ",
+"Mustard":"ସରିଷା",
+"Jute":"ପାଟ",
+"Potato":"ଆଳୁ",
+"Tea":"ଚା",
+"Chilli":"ଲଙ୍କା",
+"Turmeric":"ହଳଦୀ",
+"Cardamom":"ଏଲାଚୀ",
+"Soybean":"ସୋୟାବିନ",
+"Pulses":"ଡାଲି",
+"Oilseeds":"ତିଲହନ",
+"Gram":"ଚଣା",
+"Castor":"ଏରାଣ୍ଡ",
+"Vegetables":"ସବ୍ଜି",
+"Apple":"ସେବ",
+"Saffron":"କେଶର",
+"Barley":"ଜଉ",
+"Peas":"ମଟର",
+"Arecanut":"ଗୁଆ"
+}
+},
+};
+
+/* ================= LANGUAGE SWITCH ================= */
+document.querySelectorAll("#langBar span").forEach(el=>{
+ el.onclick=()=>{
+  document.querySelectorAll("#langBar span").forEach(s=>s.classList.remove("active-lang"));
+  el.classList.add("active-lang");
+  currentLang=el.dataset.lang;
+  schemeIndex=0;
+  updateUI();
+ };
+});
+
+/* ================= SCHEME SLIDER ================= */
+function updateScheme(){
+  const t = TEXT[currentLang];
+  const s = t.schemes[schemeIndex];
+  const card = document.querySelector(".scheme-card");
+
+  // slide LEFT
+  card.style.transform = "translateX(-30px)";
+  card.style.opacity = "0";
+
+  setTimeout(()=>{
+
+    // change content AFTER slide out
+    schemeTitle.innerText = t.schemeHeading+" – "+s.title;
+    schemeText.innerText = s.desc;
+    schemeLink.innerText = "Official Website";
+    schemeLink.href = s.link;
+
+    // start from RIGHT
+    card.style.transform = "translateX(30px)";
+
+    setTimeout(()=>{
+      // slide back to center smoothly
+      card.style.transform = "translateX(0)";
+      card.style.opacity = "1";
+    },50);
+
+  },300);
+
+  schemeIndex = (schemeIndex + 1) % t.schemes.length;
+}
+
+/* ================= UI UPDATE ================= */
+function updateUI(){
+ const t = TEXT[currentLang];
+
+ document.getElementById("btnAdvice").innerText = t.labels[0];
+ document.getElementById("btnWeather").innerText = t.labels[1];
+ document.getElementById("btnMyCrop").innerText = t.labels[2];
+ document.getElementById("btnBest").innerText = t.labels[3];
+ document.getElementById("profileText").innerText = t.labels[4];
+
+ updateScheme();
+}
+
+setInterval(updateScheme,5000);
+updateUI();
+
+/* ================= FUNCTIONS ================= */
+function cropAdvice(){
+  const result = document.getElementById("resultAdvice");
+
+  if(!result.classList.contains("hidden")){
+  result.classList.add("hidden");
+  speechSynthesis.cancel();   // 🔥 stop voice
+  return;
+}
+
+
+  result.classList.remove("hidden");
+  result.innerHTML =
+    "<h3>"+btnAdvice.innerText+"</h3><ul>"+
+    TEXT[currentLang].advice.map(a=>"<li>"+a+"</li>").join("")+
+    "</ul>";
+
+  speakText(TEXT[currentLang].advice.join(". "));
+}
+
+
+function weatherToday(){
+
+  const result = document.getElementById("resultWeather");
+
+   if(!result.classList.contains("hidden")){
+  result.classList.add("hidden");
+  speechSynthesis.cancel();
+  return;
+}
+
+
+  const t = TEXT[currentLang];
+  result.classList.remove("hidden");
+
+  const temp = 28 + Math.floor(Math.random()*4);
+  const wind = 5 + Math.floor(Math.random()*10);
+
+  result.innerHTML = `
+  <h3>${t.weatherTitle}</h3>
+  <p>${t.temp}: ${temp}°C</p>
+  <p>${t.wind}: ${wind} km/h</p>
+  <p>${t.tomorrow}: ${t.suitable}</p>
+  `;
+
+  speakText(`${t.weatherTitle}. ${t.temp} ${temp} degree. ${t.suitable}`);
+}
+
+
+
+function bestCrop(){
+  const result = document.getElementById("resultBest");
+
+if(!result.classList.contains("hidden")){
+  result.classList.add("hidden");
+  speechSynthesis.cancel();
+  return;
+}
+
+
+  const state = localStorage.getItem("farmerState");
+  const district = localStorage.getItem("farmerDistrict");
+
+  if(localStorage.getItem("profileCompleted") !== "yes"){
+  alert("⚠️ Please complete your profile first");
+  openProfile();
+  return;
+}
+
+  let crops = TEXT[currentLang].crops;
+
+
+
+    if(CROP_DB[state]){
+
+  crops = CROP_DB[state].crops.map(crop => {
+    const translated = TEXT[currentLang].cropTranslate;
+    return translated && translated[crop]
+      ? translated[crop]
+      : crop;
+  });
+
+
+
+
+
+    if(
+      district &&
+      CROP_DB[state].districts &&
+      CROP_DB[state].districts[district]
+    ){
+     crops = CROP_DB[state].districts[district].map(crop=>{
+  const t = TEXT[currentLang].cropTranslate;
+  return t && t[crop] ? t[crop] : crop;
+});
+
+    }
+  }
+
+
+result.classList.remove("hidden");
+
+  result.innerHTML = `
+  <h3>${TEXT[currentLang].bestCropTitleState} ${state}${district ? " - "+district : ""}</h3>
+
+    ${crops.map(c =>
+      `<div class="btn" onclick="selectCrop('${c}')">${c}</div>`
+    ).join("")}
+  `;
+
+}
+
+function selectCrop(c){
+
+  selectedCrop = c.toLowerCase();
+
+  alert("✅ " + c + " selected");
+
+  // ✅ Correct ID
+  const bestCropSection = document.getElementById("resultBest");
+
+  if(bestCropSection){
+    bestCropSection.classList.add("hidden");
+  }
+
+}
+
+
+
+
+
+function showMyCrop(){
+
+ if(!selectedCrop){
+   alert(TEXT[currentLang].selectCropMsg);
+   return;
+ }
+
+ const result = document.getElementById("resultMyCrop");
+
+ if(!result.classList.contains("hidden")){
+   result.classList.add("hidden");
+   return;
+ }
+
+ result.classList.remove("hidden");
+
+const videoLink = CROP_VIDEOS[selectedCrop.toLowerCase()];
+
+ result.innerHTML = `
+   <h3>🌱 ${selectedCrop.toUpperCase()}</h3>
+   ${videoLink ? `
+   <iframe width="100%" height="300"
+     src="${videoLink}"
+     frameborder="0"
+     allowfullscreen>
+   </iframe>
+   ` : "<p>Video coming soon...</p>"}
+ `;
+}
+
+
+
+function openProfile(){
+  document.getElementById("PROFILE").classList.remove("hidden");
+}
+
+function closeProfile(){
+  document.getElementById("PROFILE").classList.add("hidden");
+}
+const CROP_VIDEOS = {
+  paddy: "https://youtu.be/fJq3xKciY9k?si=-p8Ki3s9_xZ2_XyO",
+  banana: "https://www.youtube.com/embed/yeRMwJUGZlo",
+  coconut: "https://www.youtube.com/embed/OhvyWwjhqtU",
+  maize: "https://www.youtube.com/embed/LNlodquFgkc",
+  cotton: "https://www.youtube.com/embed/E9I_fI_uGww",
+  sugarcane: "https://www.youtube.com/embed/ZvwwMAD9VaU",
+  tea:  "https://www.youtube.com/embed/GTMiho41J1U",
+  groundnut: "https://www.youtube.com/embed/VIDEO_ID_8",
+  pulses: "https://www.youtube.com/embed/VIDEO_ID_9",
+  turmeric: "https://www.youtube.com/embed/VIDEO_ID_10",
+  barley:  "https://www.youtube.com/embed/UwE7A_z-itE",
+  coffee:  "https://www.youtube.com/embed/zjxCQwxKEik",
+  chilli:  "https://www.youtube.com/embed/vgf8gnVA934",
+  wheat:  "https://www.youtube.com/embed/QqyoNnmJVHk",
+  
+};
+
+function showOtherCropVideos(selectedCrop) {
+  const container = document.getElementById("cropAdviceOutput");
+
+  container.innerHTML += `<h3>Other Crop Tutorials</h3>`;
+
+  Object.keys(CROP_VIDEOS).forEach(crop => {
+    if (crop !== selectedCrop) {
+      container.innerHTML += `
+        <h4>${crop}</h4>
+        <iframe width="100%" height="250"
+          src="${CROP_VIDEOS[crop]}"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+      `;
+    }
+  });
+}
+
+</script>
+<script>
+/* ================= STATE & DISTRICT DROPDOWN FIX ================= */
+
+const stateSelect = document.getElementById("state");
+const districtSelect = document.getElementById("district");
+
+/* Load states */
+function loadStates() {
+  stateSelect.innerHTML = '<option value="">Select State</option>';
+  districtSelect.innerHTML = '<option value="">Select District</option>';
+
+  if (!window.STATES) {
+    console.error("STATES not loaded");
+    return;
+  }
+
+  Object.keys(window.STATES).forEach(state => {
+    const opt = document.createElement("option");
+    opt.value = state;
+    opt.textContent = state;
+    stateSelect.appendChild(opt);
+  });
+  }
+  document.addEventListener("DOMContentLoaded", loadStates);
+
+
+/* Load districts when state changes */
+stateSelect.addEventListener("change", () => {
+  const selectedState = stateSelect.value;
+  districtSelect.innerHTML = '<option value="">Select District</option>';
+
+  if (!selectedState || !window.STATES[selectedState]) return;
+
+  window.STATES[selectedState].forEach(district => {
+    const opt = document.createElement("option");
+    opt.value = district;
+    opt.textContent = district;
+    districtSelect.appendChild(opt);
+  });
+});
+
+/* Call once on page load */
+document.addEventListener("DOMContentLoaded", loadStates);
+</script>
+<script>
+function isValidPhone(phone) {
+  return /^[6-9]\d{9}$/.test(phone);
+}
+
+function isValidAadhaar(aadhaar) {
+  return /^\d{12}$/.test(aadhaar);
+}
+
+function isValidKisan(kisan) {
+  return kisan.length >= 8; // basic sanity check
+}
+
+function validateProfile() {
+  const name = document.getElementById("farmerName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const aadhaar = document.getElementById("aadhaar").value.trim();
+  const kisan = document.getElementById("kisan").value.trim();
+  const state = document.getElementById("state").value;
+  const district = document.getElementById("district").value;
+
+  if(name.length < 3){
+    alert("❌ Enter valid name");
+    return false;
+  }
+
+  if (!isValidPhone(phone)) {
+    alert("❌ Invalid phone number");
+    return false;
+  }
+
+  if (!isValidAadhaar(aadhaar)) {
+    alert("❌ Aadhaar must be 12 digits");
+    return false;
+  }
+
+  if (!isValidKisan(kisan)) {
+    alert("❌ Invalid Kisan card number");
+    return false;
+  }
+
+  if (!state || !district) {
+    alert("❌ Please select state and district");
+    return false;
+  }
+
+  localStorage.setItem("farmerName", name);
+  localStorage.setItem("farmerState", state);
+  localStorage.setItem("farmerDistrict", district);
+  localStorage.setItem("profileCompleted", "yes");
+
+  alert("✅ Profile saved successfully");
+  return true;
+}
+
+</script>
+<script>
+function previewProfilePhoto(input){
+  if(input.files && input.files[0]){
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+      const img = document.getElementById("profilePreview");
+      img.src = e.target.result;
+      img.classList.remove("hidden");
+
+      localStorage.setItem("profilePhoto", e.target.result);
+    };
+
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+document.addEventListener("DOMContentLoaded", function(){
+
+  const savedPhoto = localStorage.getItem("profilePhoto");
+  if(savedPhoto){
+    const img = document.getElementById("profilePreview");
+    img.src = savedPhoto;
+    img.classList.remove("hidden");
+  }
+
+});
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const saved = localStorage.getItem("profileAvatar");
+  if(saved){
+    const preview = document.getElementById("profilePreview");
+    preview.src = saved;
+    preview.style.display = "block";
+    preview.classList.remove("hidden");
+  }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const saved = localStorage.getItem("profileAvatar");
+  if(saved){
+    const preview = document.getElementById("profilePreview");
+    preview.src = saved;
+    preview.style.display = "block";
+    preview.classList.remove("hidden");
+  }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if(localStorage.getItem("profileCompleted") === "yes"){
+    // profile is already saved, do nothing
+    console.log("Profile already completed");
+  }
+});
+</script>
+<script>
+function logout(){
+  if(confirm("Are you sure you want to logout?")){
+    localStorage.clear();
+    location.reload();
+  }
+}
+function openFullImage(){
+  const src = localStorage.getItem("profileAvatar");
+  if(!src) return;
+
+  document.getElementById("fullImage").src = src;
+  document.getElementById("imageModal").classList.remove("hidden");
+}
+
+function closeFullImage(){
+  document.getElementById("imageModal").classList.add("hidden");
+}
+
+</script>
+<div id="imageModal" class="hidden" onclick="closeFullImage()" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:999;
+
+
+">
+  <img id="fullImage" style="
+    max-width:90%;
+    max-height:90%;
+    border-radius:10px;
+  ">
+</div>
+<script>
+let allVoices = [];
+
+// Load voices correctly
+function loadVoices(){
+  allVoices = window.speechSynthesis.getVoices();
+}
+
+loadVoices();
+window.speechSynthesis.onvoiceschanged = loadVoices;
+
+let isSpeaking = false;
+
+function speakText(text){
+
+  // Stop immediately if already speaking
+  if(speechSynthesis.speaking){
+    speechSynthesis.cancel();
+    isSpeaking = false;
+    return;
+  }
+
+  const speech = new SpeechSynthesisUtterance(text);
+
+  // Use current language
+  speech.lang = currentLang === "hi" ? "hi-IN" :
+                currentLang === "te" ? "te-IN" :
+                currentLang === "ta" ? "ta-IN" :
+                currentLang === "kn" ? "kn-IN" :
+                currentLang === "ml" ? "ml-IN" :
+                currentLang === "or" ? "or-IN" :
+                "en-US";
+
+  speechSynthesis.speak(speech);
+  isSpeaking = true;
+
+  speech.onend = function(){
+    isSpeaking = false;
+  };
+}
+
+
+</script>
+
+</body>
+</html>
